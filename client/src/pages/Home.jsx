@@ -1,12 +1,19 @@
 import React from 'react'
 import Header from '../components/Header';
+import Steps from '../components/Steps';
+import Description from '../components/Description';
+import Testimonial from '../components/Testimonial';
+import Generatebtn from '../components/Generatebtn';
 
 const Home = () => {
   console.log("Home component rendered");
-  // This will log every time the Home component is rendered
   return (
     <div>
       <Header />
+      <Steps />
+      <Description />
+      <Testimonial />
+      <Generatebtn />
     </div>
   )
 }

@@ -19,9 +19,24 @@ const Header = () => {
         Generate stunning images from your text prompts using our advanced AI technology.
       </p>
 
-      <button className="flex items-center gap-2 px-6 py-3 bg-black text-white rounded-lg font-semibold mt-8 text-lg">
-        Generate images
-        <img src={assets.star_group} alt="Stars" className="w-6 h-6" />
+      <button className="group relative bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold py-4 px-8 sm:px-12 rounded-2xl shadow-xl hover:shadow-2xl transform transition-all duration-300 hover:scale-105 hover:-translate-y-1 flex items-center gap-3 text-lg sm:text-xl overflow-hidden mt-8">
+        
+        {/* Animated background */}
+        <div className="absolute inset-0 bg-gradient-to-r from-pink-500 to-yellow-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+        
+        {/* Button content */}
+        <span className="relative z-10 transition-transform duration-300 group-hover:scale-105">
+          Generate images
+        </span>
+        
+        <img 
+          src={assets.star_group}
+          alt="Stars"
+          className="relative z-10 h-6 w-6 transition-all duration-300 group-hover:rotate-12 group-hover:scale-110"
+        />
+        
+        {/* Ripple effect */}
+        <div className="absolute inset-0 rounded-2xl bg-white opacity-0 group-hover:opacity-20 group-hover:animate-ping"></div>
       </button>
 
       <div className="mt-8 flex flex-row items-center gap-4">
