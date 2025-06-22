@@ -3,10 +3,35 @@ import React, { createContext, useState } from "react";
 export const AppContext = createContext();
 
 const AppContextProvider = (props) => {
-    const [user, setUser] = useState(true);
+    const [user, setUser] = useState(null);
+    const [showLogin, setShowLogin] = useState(false);
+
+    const login = (userData) => {
+        setUser(userData);
+        setShowLogin(false);
+    };
+
+    const logout = () => {
+        setUser(null);
+    };
+
+    const openLogin = () => {
+        setShowLogin(true);
+    };
+
+    const closeLogin = () => {
+        setShowLogin(false);
+    };
 
     const value = {
-        user, setUser
+        user, 
+        setUser,
+        showLogin,
+        setShowLogin,
+        login,
+        logout,
+        openLogin,
+        closeLogin
     };
 
     return (
