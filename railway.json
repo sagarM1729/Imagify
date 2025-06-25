@@ -1,0 +1,30 @@
+{
+  "name": "imagify-ai-generator",
+  "services": [
+    {
+      "name": "frontend",
+      "source": {
+        "repo": "your-github-username/imagify",
+        "rootDirectory": "/client"
+      },
+      "buildCommand": "npm install && npm run build",
+      "startCommand": "npx serve -s dist -l 3000",
+      "variables": {
+        "NODE_ENV": "production"
+      }
+    },
+    {
+      "name": "backend", 
+      "source": {
+        "repo": "your-github-username/imagify",
+        "rootDirectory": "/server"
+      },
+      "buildCommand": "npm install",
+      "startCommand": "npm start",
+      "variables": {
+        "NODE_ENV": "production",
+        "PORT": "5000"
+      }
+    }
+  ]
+}

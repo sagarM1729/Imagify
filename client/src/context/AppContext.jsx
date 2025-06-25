@@ -82,10 +82,11 @@ const AppContextProvider = (props) => {
                 return { success: true, message: data.message };
             } else {
                 return { success: false, message: data.message };
-            }
-        } catch (error) {
+            }        } catch (error) {
             console.error('Login error:', error);
-            return { success: false, message: 'Network error. Please try again.' };
+            console.error('Backend URL:', backendUrl);
+            console.error('Full error details:', error.message);
+            return { success: false, message: `Connection failed. Make sure server is running on ${backendUrl}` };
         } finally {
             setLoading(false);
         }

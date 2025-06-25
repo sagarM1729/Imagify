@@ -18,7 +18,20 @@ console.log(`🔌 Port: ${PORT}`);
 connectDB();
 
 app.use(express.json());
-app.use(cors());
+
+// CORS configuration
+const corsOptions = {
+  origin: process.env.NODE_ENV === 'production' 
+    ? [
+        'https://frontend-production-xxxx.up.railway.app',
+        process.env.FRONTEND_URL
+      ]
+    : true, // Allow all origins in development
+  credentials: true,
+  optionsSuccessStatus: 200
+};
+
+app.use(cors(corsOptions));
 
 app.get('/', (req, res) => {
   res.send('Welcome to the server!');
