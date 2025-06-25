@@ -6,27 +6,32 @@ import { motion, AnimatePresence } from "motion/react"
 const Login = ({ isOpen, onClose }) => {
   const [isLogin, setIsLogin] = useState(true)
   const [formData, setFormData] = useState({ name: '', email: '', password: '' })
-  const [loading, setLoading] = useState(false)
-  const { login } = useContext(AppContext)
+  const [error, setError] = useState('')
+  const { loginUser, registerUser, loading } = useContext(AppContext)
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    setLoading(true)
+    setError('')
     
-    setTimeout(() => {
-      // Simulate successful login/signup
-      const userData = {
-        name: formData.name || formData.email.split('@')[0],
-        email: formData.email,
-        credits: 25
-      }
+    try {
+      let result
       
-      login(userData)
-      alert(`🎉 ${isLogin ? 'Welcome back!' : 'Account created!'}`)
-      setLoading(false)
-      onClose()
-      setFormData({ name: '', email: '', password: '' })
-    }, 1000)
+      if (isLogin) {
+        result = await loginUser(formData.email, formData.password)
+      } else {
+        result = await registerUser(formData.name, formData.email, formData.password)
+      }
+
+      if (result.success) {
+        alert(`🎉 ${result.message}`)
+        onClose()
+        setFormData({ name: '', email: '', password: '' })
+      } else {
+        setError(result.message)
+      }
+    } catch (error) {
+      setError('Something went wrong. Please try again.')
+    }
   }
 
   if (!isOpen) return null
@@ -81,9 +86,7 @@ const Login = ({ isOpen, onClose }) => {
             >
               {isLogin ? 'Welcome Back!' : 'Join Imagify'}
             </motion.h2>
-          </motion.div>
-
-          {/* Form */}
+          </motion.div>          {/* Form */}
           <motion.form 
             onSubmit={handleSubmit} 
             className="p-4 space-y-3"
@@ -91,6 +94,17 @@ const Login = ({ isOpen, onClose }) => {
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.2, duration: 0.5 }}
           >
+            {error && (
+              <motion.div 
+                className="text-red-500 text-xs text-center p-2 bg-red-50 rounded-lg"
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                {error}
+              </motion.div>
+            )}
+            
             <AnimatePresence mode="wait">
               {!isLogin && (
                 <motion.input 

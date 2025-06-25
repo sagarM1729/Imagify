@@ -2,7 +2,9 @@ import express from 'express';
 import cors from 'cors';
 import 'dotenv/config';
 import connectDB from './config/mongodb.js';
-import { registerUser, loginUser, getUserCredits, verifyToken } from './controllers/userController.js';
+import userRoutes from './routes/userRoutes.js';
+import imageRoutes from './routes/imageRoutes.js';
+import paymentRoutes from './routes/paymentRoutes.js';
 
 const PORT = process.env.PORT || 4000;
 const app = express();
@@ -22,10 +24,10 @@ app.get('/', (req, res) => {
   res.send('Welcome to the server!');
 });
 
-// User routes
-app.post('/api/user/register', registerUser);
-app.post('/api/user/login', loginUser);
-app.get('/api/user/credits', verifyToken, getUserCredits);
+// Routes
+app.use('/api/user', userRoutes);
+app.use('/api/image', imageRoutes);
+app.use('/api/payment', paymentRoutes);
 
 app.listen(PORT, () => {
   console.log('✅ Server Started Successfully!');

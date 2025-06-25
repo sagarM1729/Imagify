@@ -7,13 +7,14 @@ import { useContext } from 'react';
 import Login from './Login';
 
 const Navbar = () => {
-  const { user, logout, showLogin, openLogin, closeLogin } = useContext(AppContext);
+  const { user, logout, showLogin, openLogin, closeLogin, credit } = useContext(AppContext);
   const navigate = useNavigate();
 
   const handleLogout = () => {
     logout();
     navigate('/');
   };
+  
   return (
     <motion.div 
       className="flex items-center justify-between py-4"
@@ -50,7 +51,7 @@ const Navbar = () => {
                   animate={{ rotate: [0, 5, -5, 0] }}
                   transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
                 />
-                <p className='text-xs sm:text-sm font-medium text-gray-600'>Credits left: {user.credits || 25}</p>
+                <p className='text-xs sm:text-sm font-medium text-gray-600'>Credits left: {credit}</p>
             </motion.button>
             <motion.p 
               className='text-gray-600 max-sm:hidden pl-4'

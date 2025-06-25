@@ -1,8 +1,9 @@
-import React, { useState } from 'react'
+import React, { useState, useContext } from 'react'
 import { assets } from '../assets/assets'
 import { useNavigate } from 'react-router-dom'
 import { motion } from "motion/react"
 import Generatebtn from '../components/Generatebtn'
+import { AppContext } from '../context/AppContext'
 
 const Result = () => {
   const [image, setImage] = useState(null)
@@ -11,34 +12,56 @@ const Result = () => {
   const [prompt, setPrompt] = useState('')
   const [hasGenerated, setHasGenerated] = useState(false)
   const navigate = useNavigate()
+  const { generateImage, user, openLogin } = useContext(AppContext)
 
   const handleGenerate = async () => {
     if (!prompt.trim()) {
       alert('Please enter a prompt to generate an image!')
       return
     }
+
+    if (!user) {
+      openLogin()
+      return
+    }
     
     setLoading(true)
     setHasGenerated(false)
+    setImage(null)
+    setIsImageLoaded(false)
     
-    // Simulate API call
-    setTimeout(() => {
-      setImage(assets.sample_img_1) // Replace with actual API response
-      setHasGenerated(true)
+    try {
+      const result = await generateImage(prompt, "1024x1024")
+      
+      if (result.success) {
+        setImage(result.imageUrl)
+        setHasGenerated(true)
+        setIsImageLoaded(true)
+        alert(`🎉 Image generated! ${result.remainingCredits} credits remaining.`)
+      } else {
+        alert(`❌ Error: ${result.message}`)
+      }
+    } catch (error) {
+      alert('❌ Failed to generate image. Please try again.')
+      console.error('Generation error:', error)
+    } finally {
       setLoading(false)
-      setIsImageLoaded(true)
-    }, 3000)
+    }
   }
-
   const handleDownload = () => {
     if (!image) return
     
-    const link = document.createElement('a')
-    link.href = image
-    link.download = 'generated-image.png'
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
+    try {
+      const link = document.createElement('a')
+      link.href = image
+      link.download = `imagify-${Date.now()}.png`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+    } catch (error) {
+      console.error('Download error:', error)
+      alert('Failed to download image. Please try again.')
+    }
   }
   return (
     <motion.div 

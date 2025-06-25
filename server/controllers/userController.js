@@ -46,11 +46,9 @@ const registerUser = async (req, res) => {
       name,
       email,
       password: hashedPassword,
-    });
-
-    // Generate JWT token
+    });    // Generate JWT token
     const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, {
-      expiresIn: "1d",
+      expiresIn: "7d", // Token expires in 7 days
     });
 
     res.status(201).json({ 
@@ -111,11 +109,9 @@ const loginUser = async (req, res) => {
         success: false,
         message: "Invalid email or password" 
       });
-    }
-
-    // Generate JWT token
+    }    // Generate JWT token
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "1d",
+      expiresIn: "7d", // Token expires in 7 days
     });
 
     res.status(200).json({ 
@@ -140,9 +136,13 @@ const loginUser = async (req, res) => {
 
 // Middleware to verify JWT token
 const verifyToken = (req, res, next) => {
+  console.log('🔍 Debug - Headers received:', req.headers.authorization);
+  
   const token = req.headers.authorization?.split(' ')[1]; // Bearer token
+  console.log('🔍 Debug - Extracted token:', token ? 'Token found' : 'No token');
 
   if (!token) {
+    console.log('❌ Debug - No token provided');
     return res.status(401).json({ 
       success: false,
       message: "Access denied. No token provided." 
@@ -150,13 +150,17 @@ const verifyToken = (req, res, next) => {
   }
 
   try {
+    console.log('🔍 Debug - JWT_SECRET exists:', !!process.env.JWT_SECRET);
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    console.log('✅ Debug - Token verified successfully, user ID:', decoded.id);
     req.user = decoded;
     next();
   } catch (error) {
+    console.log('❌ Debug - Token verification failed:', error.message);
     res.status(401).json({ 
       success: false,
-      message: "Invalid token." 
+      message: "Invalid token.",
+      debug: error.message // Temporary debug info
     });
   }
 };

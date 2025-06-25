@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react'
+import React, { useState, useContext, useEffect } from 'react'
 import { assets } from '../assets/assets'
 import { motion } from "motion/react"
 import Login from '../components/Login'
@@ -6,7 +6,39 @@ import { AppContext } from '../context/AppContext'
 
 const BuyCredit = () => {
   const [selectedPlan, setSelectedPlan] = useState('pro')
-  const { user, openLogin, showLogin, closeLogin } = useContext(AppContext)
+  const [isProcessing, setIsProcessing] = useState(false)
+  const { user, openLogin, showLogin, closeLogin, purchaseCredits, loading } = useContext(AppContext)
+  // Load Razorpay script
+  useEffect(() => {
+    const loadRazorpayScript = () => {
+      console.log('🔄 Loading Razorpay script...');
+      
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.async = true;
+      
+      script.onload = () => {
+        console.log('✅ Razorpay script loaded successfully');
+      };
+      
+      script.onerror = () => {
+        console.error('❌ Failed to load Razorpay script');
+      };
+      
+      document.body.appendChild(script);
+    };
+    
+    loadRazorpayScript();
+    
+    // Cleanup function to remove script when component unmounts
+    return () => {
+      const scripts = document.querySelectorAll('script[src="https://checkout.razorpay.com/v1/checkout.js"]');
+      scripts.forEach(script => {
+        if (script.parentNode) {
+          script.parentNode.removeChild(script);
+        }
+      });
+    };  }, []);
 
   const plans = [
     {
@@ -53,14 +85,37 @@ const BuyCredit = () => {
         'Custom Models',
         'Priority Queue'
       ]
-    }  ]
-  const openAuth = (planId) => {
+    }
+  ]
+    const handlePurchase = async (planId) => {
     setSelectedPlan(planId)
+    
     if (!user) {
       openLogin()
-    } else {
-      // User is already logged in, proceed with payment
-      alert(`Proceeding to payment for ${planId} plan!`)
+      return
+    }
+
+    // Check if Razorpay is loaded
+    if (!window.Razorpay) {
+      alert('❌ Payment system not loaded. Please refresh the page and try again.')
+      return
+    }
+
+    setIsProcessing(true)
+    
+    try {
+      const result = await purchaseCredits(planId)
+      
+      if (result.success) {
+        alert(`🎉 Payment Successful!\n\n${result.creditsAdded} credits have been added to your account.\nNew balance: ${result.newBalance} credits`)
+      } else {
+        alert(`❌ Payment Failed\n\n${result.message}`)
+      }
+    } catch (error) {
+      console.error('Purchase error:', error)
+      alert('❌ An error occurred during payment. Please try again.')
+    } finally {
+      setIsProcessing(false)
     }
   }
   return (
@@ -78,17 +133,17 @@ const BuyCredit = () => {
           initial={{ y: -30, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.2, duration: 0.6 }}
-        >
-          <h1 className="text-3xl sm:text-4xl lg:text-6xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-6 leading-tight">
+        >          <h1 className="text-3xl sm:text-4xl lg:text-6xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-6 leading-tight">
             Choose Your Plan
           </h1>
           <p className="text-gray-600 text-lg sm:text-xl max-w-3xl mx-auto leading-relaxed">
-            Unlock the full potential of AI image generation with our flexible credit packages
-          </p>
-            {/* Current Credits Display */}
+            Unlock the full potential of AI image generation with our flexible credit packages          </p>
+          
+          {/* Current Credits Display */}
           <div className="mt-8 inline-flex items-center bg-white rounded-full shadow-lg px-6 py-3">
             <img src={assets.star_group} alt="Credits" className="h-6 w-6 mr-2" />
-            <span className="font-semibold text-gray-800">Current Credits: <span className="text-blue-600">{user?.credits || 0}</span></span>          </div>
+            <span className="font-semibold text-gray-800">Current Credits: <span className="text-blue-600">{user?.credits || 0}</span></span>
+          </div>
         </motion.div>        {/* Plans Grid */}
         <motion.div 
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16"
@@ -139,19 +194,18 @@ const BuyCredit = () => {
                       <span className="text-gray-600">{feature}</span>
                     </div>
                   ))}
-                </div>
-
-                {/* Get Started Button */}
+                </div>                {/* Get Started Button */}
                 <button
-                  onClick={() => openAuth(plan.id)}
-                  className={`w-full py-4 px-6 rounded-xl font-bold text-lg transition-all duration-300 transform hover:scale-105 mt-auto ${
+                  onClick={() => handlePurchase(plan.id)}
+                  disabled={isProcessing || loading}
+                  className={`w-full py-4 px-6 rounded-xl font-bold text-lg transition-all duration-300 transform hover:scale-105 mt-auto disabled:opacity-50 disabled:cursor-not-allowed ${
                     plan.popular
                       ? 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-xl'
                       : 'bg-gray-800 hover:bg-gray-900 text-white shadow-lg'
                   }`}
                 >
-                  Get Started
-                </button>              </div>
+                  {isProcessing ? 'Processing...' : 'Get Started'}
+                </button></div>
             </motion.div>
           ))}
         </motion.div>
@@ -195,6 +249,18 @@ const BuyCredit = () => {
           </div>        </div>
       </div>      {/* Simple Login Modal */}
       <Login isOpen={showLogin} onClose={closeLogin} />
+      
+      {/* Loading Overlay */}
+      {(isProcessing || loading) && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-8 text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-700 font-semibold">
+              {isProcessing ? 'Processing payment...' : 'Loading...'}
+            </p>
+          </div>
+        </div>
+      )}
     </motion.div>
   )
 }
