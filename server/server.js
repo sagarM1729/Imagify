@@ -23,8 +23,9 @@ app.use(express.json());
 const corsOptions = {
   origin: process.env.NODE_ENV === 'production' 
     ? [
-        'https://frontend-production-xxxx.up.railway.app',
-        process.env.FRONTEND_URL
+        process.env.FRONTEND_URL,
+        /^https:\/\/.*\.vercel\.app$/,  // Allow any Vercel subdomain
+        'https://localhost:3000'
       ]
     : true, // Allow all origins in development
   credentials: true,
